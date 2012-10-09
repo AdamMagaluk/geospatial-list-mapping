@@ -29,6 +29,8 @@ var LineEditor = function(map,markers){
         hoverThreshold : 50
     }
     
+    this.master = [];
+    
     this.lines = [];
     
     this._closestPoint = function(latlng,thres){
@@ -36,7 +38,7 @@ var LineEditor = function(map,markers){
         $(this.markers).each(function(){
             var pos = this.marker._latlng;
             var dist = pos.distanceTo(latlng);
-            if(dist < thres) points.push({maker : this, d : dist,pos : this.marker._latlng});
+            if(dist < thres) points.push({marker : this, d : dist,pos : this.marker._latlng});
         })
         
         points.sort(function(a,b){
@@ -49,6 +51,26 @@ var LineEditor = function(map,markers){
         if(points.length >= sliceAmount){
             points = points.slice(0,sliceAmount);
         }
+        
+        if(points.length > 0){
+            if(this.master.length == 0){
+                this.master.push(points[0]);
+            }
+            else {
+                var p1 = points[0];
+                var p2 = this.master[this.master.length-1];
+                
+                if(p1.marker.id != p2.marker.id){
+                
+                    this.master.push(points[0]);
+                    L.polyline([p1.pos,p2.pos], {
+                        color: 'blue'
+                    }).addTo(this.map);
+                    $("#list ul").append("<li>" + p1.marker.id +"</li>")
+                }
+            }
+        }
+        
         
         var _self = this;
         $(_self.lines).each(function(){
@@ -82,6 +104,7 @@ LineEditor.prototype.checkMouseHover = function(e){
     var bounds = this.map.getBounds(); 
     var dist = bounds.getNorthWest().distanceTo(bounds.getSouthEast());
     this._closestPoint(e.latlng,dist / 50);
+    
 }
 
 

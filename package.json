@@ -1,0 +1,16 @@
+{
+  "name" : "geospatial-list-mapping",
+  "description" : "Using Leaflet to create a geospatial point selector.",
+  "version" : "0.0.1",
+  "author" : "Adam Magaluk <AdamMagaluk@gmail.com>",
+
+  "dependencies": {
+    "express": "2.5.x",
+    "ejs" : ">=0.4.3"
+  },
+  "engines": {
+    "node": "0.8.x",
+    "npm": "1.1.x"
+  }
+
+}

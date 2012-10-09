@@ -1,0 +1,109 @@
+    
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Leaflet Quick Start Guide Example</title>
+        <meta charset="utf-8" />
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4/leaflet.css" />
+        <!--[if lte IE 8]><link rel="stylesheet" href="../dist/leaflet.ie.css" /><![endif]-->
+
+        <style type="text/css">
+            body,html {
+                margin: 0px;
+                padding: 0px;
+                width: 100%;
+                height: 100%;
+                display: block;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="map" style="width: 100%; height: 99%"></div>
+
+        <script src="http://cdn.leafletjs.com/leaflet-0.4/leaflet.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+        <script src="js/LineEditor.js"></script>
+
+        <script>
+            
+            var map = L.map('map').setView([51.505, -0.09], 16);
+            /*
+            L.tileLayer('http://{s}.tile.cloudmade.com/BC9A493B41014CAABB98F0471D759707/997/256/{z}/{x}/{y}.png', {
+                maxZoom: 22,
+                attribution: ''
+            }).addTo(map);
+             */
+            
+            L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+                maxZoom : 20
+            }).addTo(map);
+            
+            
+            function randPoint(){
+                var center = [51.5, -0.09];
+                var alpha = 0.005;
+                
+                var xOffset = Math.random()*alpha;
+                if(Math.random() < 0.5)xOffset=xOffset*-1;
+                
+                var yOffset = Math.random()*alpha;
+                if(Math.random() < 0.5)yOffset=yOffset*-1;
+                
+                return [center[0]+xOffset,center[1]+yOffset];
+            }
+            
+            var poleIcon = L.icon({
+                iconUrl: 'img/distConnector.png',
+                iconSize:     [12, 12], // size of the icon
+                shadowSize:   [8, 8], // size of the shadow
+                iconAnchor:   [4, 4], // point of the icon which will correspond to marker's location
+                shadowAnchor: [0, 0],  // the same for the shadow
+                popupAnchor:  [0, 0] // point from which the popup should open relative to the iconAnchor
+            });
+            var markers = [];
+            var lineEditor = new LineEditor(map,markers);
+            
+            for(var i=0;i<1000;i++){
+                var marker = L.marker(randPoint(), {
+                    icon: poleIcon,
+                    id : i
+                }).addTo(map);
+                
+                marker.on('click', function(e) {
+                    if(lineEditor.editEnable)console.log("mouse click - " + this.options.id)
+                });
+                marker.on('mouseover', function(e) {
+                    if(lineEditor.editEnable)
+                        console.log("mouse over - " + this.options.id)
+                });
+                marker.on('mousedown', function(e) {
+                    if(lineEditor.editEnable)console.log("mouse down - " + this.options.id)
+                });
+                marker.on('mouseout', function(e) {
+                    if(lineEditor.editEnable)console.log("mouse out - " + this.options.id)
+                });
+                
+                markers.push({id : i,marker : marker});
+            }
+            
+            map.on('mousemove',function(e){
+                // console.log("map mouse move");
+                lineEditor.checkMouseHover(e);
+            })
+            
+            window.oncontextmenu = function (){
+                return false;
+            }
+            $("body").mousedown(function(eventData){
+                if(eventData.which == 3){lineEditor.setEdit(true)}
+            });
+            $("body").mouseup(function(eventData){
+                if(eventData.which == 3){lineEditor.setEdit(false)}
+            });
+            
+            
+        </script>
+    </body>
+</html>

@@ -33,26 +33,40 @@
     <body>
         <div id="map" style="float:left; width: 90%; height: 99%"></div>
         <div id="list"><ul></ul></div>
+        <div id="hidden-map" style=""></div>
 
         <script src="http://cdn.leafletjs.com/leaflet-0.4/leaflet.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
         <script src="js/LineEditor.js"></script>
-
+        <script type="text/javascript" src="http://tile.cloudmade.com/wml/latest/web-maps-lite.js"></script>
         <script>
+            var cloudMadeAPIKey = '7184349125774860b022200e2184e170';
+            
+            var cloudmade = new CM.Tiles.CloudMade.Web({key: cloudMadeAPIKey});
+            var cloudMadeMapForDir = new CM.Map('hidden-map', cloudmade);
+            cloudMadeMapForDir.setCenter(new CM.LatLng(51.514, -0.137), 15);
+           
+            function getPolyLineDirection(start,end,cb){
+                var directions = new CM.Directions(cloudMadeMapForDir, null, cloudMadeAPIKey);
+                var latlngs = [new CM.LatLng(start.lat, start.lng), new CM.LatLng(end.lat,end.lng)];
+                directions.loadFromWaypoints(latlngs,{preserveViewport : true});
+                CM.Event.addListener(directions, 'load', function() {
+                    var cmPoints=directions.getPolyline().latlngs;
+                    var points = [];
+                    $(cmPoints).each(function(){
+                        points.push(new L.LatLng(this._lat,this._lng))
+                    })
+                    cb(points)
+                });
+            }
+           
             
             var map = L.map('map').setView([51.505, -0.09], 16);
-            /*
-            L.tileLayer('http://{s}.tile.cloudmade.com/BC9A493B41014CAABB98F0471D759707/997/256/{z}/{x}/{y}.png', {
-                maxZoom: 22,
-                attribution: ''
-            }).addTo(map);
-             */
-            
             L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
                 maxZoom : 20
             }).addTo(map);
             
-            
+
             function randPoint(){
                 var center = [51.5, -0.09];
                 var alpha = 0.005;
@@ -104,6 +118,30 @@
                 // console.log("map mouse move");
                 lineEditor.checkMouseHover(e);
             })
+            
+            var dirPoints = [];
+            var dirMarkers = []
+            
+            /*
+            map.on('mousedown',function(e){
+                if(e.originalEvent.which != 1) return;
+                
+                dirPoints.push(e.latlng);
+                if(dirPoints.length == 2){
+                    group = L.featureGroup();
+                    console.log("getting directions")
+                    getPolyLineDirection(dirPoints[0],dirPoints[1],function(line){
+                        for(var i=0;i<line.length;i++){
+                            L.marker(line[i]).addTo(group);
+                        }
+                        map.addLayer(group);
+                    })
+                }else if(dirPoints.length == 3){
+                    map.removeLayer(group);
+                    dirPoints = [];
+                }
+            })
+            */
             
             window.oncontextmenu = function (){
                 return false;
